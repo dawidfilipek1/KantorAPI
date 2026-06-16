@@ -3,6 +3,8 @@ package com.gemini.kantoraleweb.service;
 import com.gemini.kantoraleweb.exception.CurrencyNotFoundException;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -11,39 +13,34 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 public class Kantor {
-    private final Map<String, Double> currencyExchange = new ConcurrentHashMap<>();
+    private final Map<String, BigDecimal> currencyExchange = new ConcurrentHashMap<>();
 
-    public void addCurrency(String currency, double rate){
+    public void addCurrency(String currency, BigDecimal rate){
         currencyExchange.put(currency, rate);
     }
 
-    public double exchangeCurrency(String fromToCurrency, double amount) throws CurrencyNotFoundException {
+    public BigDecimal exchangeCurrency(String fromToCurrency, BigDecimal amount){
         if(currencyExchange.containsKey(fromToCurrency)){
-            return Math.round(currencyExchange.get(fromToCurrency) * amount * 100) / 100.0;
+            return amount.multiply(currencyExchange.get(fromToCurrency)).setScale(2, RoundingMode.HALF_UP);
         }
         throw new CurrencyNotFoundException("Currency not found");
     }
 
-    public double getExchangeRate(String currency) throws CurrencyNotFoundException {
+    public BigDecimal getExchangeRate(String currency){
         if(currencyExchange.containsKey(currency)){
             return currencyExchange.get(currency);
         }
         throw new CurrencyNotFoundException("Currency not found");
     }
 
-    public void deleteCurrency(String currency) throws CurrencyNotFoundException {
+    public void deleteCurrency(String currency){
         if(!currencyExchange.containsKey(currency)) {
             throw new CurrencyNotFoundException("Currency not found");
         }
         currencyExchange.remove(currency);
     }
 
-    public List<String> getAllExchangeRates(){
-        List<String> results = new ArrayList<>();
-
-        for(String key : currencyExchange.keySet()){
-            results.add(key + ": " + currencyExchange.get(key));
-        }
-        return results;
+    public Map<String, BigDecimal> getAllExchangeRates(){
+        return currencyExchange;
     }
 }
