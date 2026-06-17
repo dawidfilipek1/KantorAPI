@@ -5,10 +5,7 @@ import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Component
@@ -33,6 +30,14 @@ public class Kantor {
         throw new CurrencyNotFoundException("Currency not found");
     }
 
+    public List<BigDecimal> getExchangeRate(List<String> currencies){
+        List<BigDecimal> list = new ArrayList<>();
+        for(String currency : currencies){
+            list.add(getExchangeRate(currency));
+        }
+        return list;
+    }
+
     public void deleteCurrency(String currency){
         if(!currencyExchange.containsKey(currency)) {
             throw new CurrencyNotFoundException("Currency not found");
@@ -41,6 +46,6 @@ public class Kantor {
     }
 
     public Map<String, BigDecimal> getAllExchangeRates(){
-        return currencyExchange;
+        return Collections.unmodifiableMap(currencyExchange);
     }
 }
